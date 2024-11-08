@@ -138,6 +138,8 @@ dist
 # testing
 /coverage
 
+/images
+
 # production
 /build
 

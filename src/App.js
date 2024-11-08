@@ -1,74 +1,32 @@
-import React from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import React, { useState } from 'react';
+import { DndProvider} from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const ItemType = 'ITEM';
+import DraggableItem from './DraggableItem';
+import GridCell from './dim';
 
-const DraggableItem = ({ id, text, moveItem }) => {
-  const [{ isDragging }, drag] = useDrag({
-    type: ItemType,
-    item: { id },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
+const GRID_SIZE = 4;
 
-  const [, drop] = useDrop({
-    accept: ItemType,
-    hover: (draggedItem) => {
-      if (draggedItem.id !== id) {
-        moveItem(draggedItem.id, id);
-        draggedItem.id = id;
-      }
-    },
-  });
-
-  return (
-    <div
-      ref={(node) => drag(drop(node))}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        padding: '10px',
-        margin: '10px',
-        backgroundColor: '#f9f9f9',
-        border: '1px solid #ccc',
-        cursor: 'move',
-      }}
-    >
-      {text}
-    </div>
-  );
-};
+const initialItems = [
+{ id: 1, x: 0, y: 0, width: 1, height: 1 },
+{ id: 2, x: 1, y: 1, width: 2, height: 2 },
+];
 
 const App = () => {
-  const [items, setItems] = React.useState([
-    { id: 1, text: 'Item 1' },
-    { id: 2, text: 'Item 2' },
-    { id: 3, text: 'Item 3' },
-  ]);
-
-  const moveItem = (fromId, toId) => {
-    const fromIndex = items.findIndex((item) => item.id === fromId);
-    const toIndex = items.findIndex((item) => item.id === toId);
-    const updatedItems = [...items];
-    const [movedItem] = updatedItems.splice(fromIndex, 1);
-    updatedItems.splice(toIndex, 0, movedItem);
-    setItems(updatedItems);
-  };
+  const [items, setItems] = useState(initialItems);
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div>
-        <h3>React DnD Example</h3>
-        {items.map((item) => (
-          <DraggableItem
-            key={item.id}
-            id={item.id}
-            text={item.text}
-            moveItem={moveItem}
-          />
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${GRID_SIZE}, 100px)` }}>
+        {[...Array(GRID_SIZE * GRID_SIZE)].map((_, index) => {
+          const x = index % GRID_SIZE;
+          const y = Math.floor(index / GRID_SIZE);
+          return <GridCell key={index} x={x} y={y} size={GRID_SIZE} items={items} setItems={setItems} />;
+        })}
       </div>
+      {items.map((item) => (
+        <DraggableItem key={item.id} item={item} items={items} setItems={setItems} />
+      ))}
     </DndProvider>
   );
 };
