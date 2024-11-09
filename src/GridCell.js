@@ -1,12 +1,11 @@
-// GridCell.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 
 const GridCell = ({ x, y, size, items, setItems }) => {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'ITEM',
     canDrop: (item) => canPlaceItem(item, x, y, size, items, item.offsetX, item.offsetY),
-    drop: (item) => moveItem(item, x, y, setItems, item.offsetX, item.offsetY),
+    drop: (item) => moveItem(item, x, y, size, setItems, item.offsetX, item.offsetY),
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
     }),
@@ -53,15 +52,35 @@ const canPlaceItem = (item, x, y, size, items, offsetX, offsetY) => {
   return true;
 };
 
-const moveItem = (item, x, y, setItems, offsetX, offsetY) => {
+const moveItem = (item, x, y, size, setItems, offsetX, offsetY) => {
+  const GRID_SIZE = size;
   const adjustedX = x - Math.floor(offsetX / 100);
   const adjustedY = y - Math.floor(offsetY / 100);
 
-  setItems((prevItems) =>
-    prevItems.map((i) =>
-      i.id === item.id ? { ...i, x: adjustedX, y: adjustedY } : i
-    )
-  );
+  setItems((prevItems) => {
+    const updatedItems = prevItems.map((i) =>
+      i.id === item.id ? { ...i, x: adjustedX, y: adjustedY, tag: 'static' } : i
+    );
+
+    logGridState(GRID_SIZE, updatedItems);
+
+    return updatedItems;
+  });
+};
+
+export const logGridState = (size, items) => {
+  const grid = Array(size).fill(null).map(() => Array(size).fill(0));
+
+  items.forEach((item) => {
+    for (let i = 0; i < item.width; i++) {
+      for (let j = 0; j < item.height; j++) {
+        grid[item.y + j][item.x + i] = item.id;
+      }
+    }
+  });
+
+  console.clear();
+  grid.forEach(row => console.log(row.join(' ')));
 };
 
 export default GridCell;

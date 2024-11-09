@@ -3,7 +3,7 @@ import { DndProvider} from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import DraggableItem from './DraggableItem';
-import GridCell from './dim';
+import GridCell from './GridCell';
 
 const GRID_SIZE = 4;
 
@@ -17,16 +17,21 @@ const App = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${GRID_SIZE}, 100px)` }}>
-        {[...Array(GRID_SIZE * GRID_SIZE)].map((_, index) => {
-          const x = index % GRID_SIZE;
-          const y = Math.floor(index / GRID_SIZE);
-          return <GridCell key={index} x={x} y={y} size={GRID_SIZE} items={items} setItems={setItems} />;
-        })}
+      <div id='inventory'>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${GRID_SIZE}, 100px)` }}>
+          {[...Array(GRID_SIZE * GRID_SIZE)].map((_, index) => {
+            const x = index % GRID_SIZE;
+            const y = Math.floor(index / GRID_SIZE);
+            return <GridCell key={index} x={x} y={y} size={GRID_SIZE} items={items} setItems={setItems} />;
+          })}
+        </div>
+        {items.map((item) => (
+          <DraggableItem key={item.id} item={item} items={items} setItems={setItems} />
+        ))}
       </div>
-      {items.map((item) => (
-        <DraggableItem key={item.id} item={item} items={items} setItems={setItems} />
-      ))}
+      <div id='item-list'>
+
+      </div>
     </DndProvider>
   );
 };
