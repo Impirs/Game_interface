@@ -11,8 +11,8 @@ const Item = ({ id, size, position }) => {
   }));
 
   const style = {
-    left: position[0].x * 50,
-    top: position[0].y * 50,
+    left: position[0].x * 102,
+    top: position[0].y * 102,
     opacity: isDragging ? 0 : 1,
   };
 

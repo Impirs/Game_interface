@@ -1,10 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import GridCell from './GridCell';
-import DraggableItemItem from './DraggableItem';
+import DraggableItem from './DraggableItem';
 import './Grid.css';
 
 const Grid = ({ width, height, items }) => {
   const [grid, setGrid] = useState(generateGrid(width, height, items));
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  const startDrag = (item, startX, startY) => {
+    const offsetX = startX - item.position[0].x;
+    const offsetY = startY - item.position[0].y;
+    setDragOffset({ x: offsetX, y: offsetY });
+  };
 
   const moveItem = useCallback(
     (id, toX, toY) => {
@@ -13,28 +20,35 @@ const Grid = ({ width, height, items }) => {
 
       const newGrid = clearItemCells(grid, item);
 
-      const newPosition = calculateNewPosition(item, toX, toY);
+      const newPosition = calculateNewPosition(item, toX - dragOffset.x, toY - dragOffset.y);
       if (isPositionValid(newGrid, newPosition, width, height)) {
         setGrid(updateGridWithItem(newGrid, item, newPosition));
       } else {
         setGrid(updateGridWithItem(newGrid, item, item.position));
       }
     },
-    [grid, items, width, height]
+    [grid, items, width, height, dragOffset]
   );
 
   return (
     <div className="grid-container">
       <div className="grid">
-        {Array.from({ length: width }).map((_, y) =>
-          <div className="row" key={y}>
-            {Array.from({ length: height }).map((_, x) => (
-              <GridCell key={`${x}-${y}`} x={x} y={y} grid={grid} moveItem={moveItem} />
+        {Array.from({ length: width }).map((_, x) =>
+          <div className="column" key={x}>
+            {Array.from({ length: height }).map((_, y) => (
+              <GridCell
+                key={`${x}-${y}`}
+                x={x}
+                y={y}
+                grid={grid}
+                moveItem={moveItem}
+                startDrag={(item) => startDrag(item, x, y)}
+              />
             ))}
           </div>
         )}
         {items.map(item => (
-          <DraggableItemItem key={item.id} {...item} />
+          <DraggableItem key={item.id} {...item} />
         ))}
       </div>
     </div>
@@ -50,10 +64,10 @@ const generateGrid = (width, height, items) => {
 };
 
 const clearItemCells = (grid, item) => {
-  const newGrid = grid.map(row => row.slice());
+  const newGrid = grid.map(column => column.slice());
   item.position.forEach(({ x, y }) => {
     if (newGrid[x] && newGrid[x][y]) { 
-      newGrid[x][y] = { status: 'empty' };
+      newGrid[y][x] = { status: 'empty' };
     }
   });
   return newGrid;
@@ -71,15 +85,17 @@ const calculateNewPosition = (item, toX, toY) => {
 };
 
 const isPositionValid = (grid, position, width, height) => {
-  return position.every(({ x, y }) => x >= 0 && y >= 0 && x < width && y < height && grid[x][y].status === 'empty');
+  return position.every(({ x, y }) => 
+    x >= 0 && y >= 0 && x < width && y < height && grid[y][x].status === 'empty'
+  ); 
 };
 
 const updateGridWithItem = (grid, item, position) => {
-  const newGrid = grid.map(row => row.slice());
+  const newGrid = grid.map(column => column.slice());
   item.position = position;
   position.forEach(({ x, y }) => {
     if (newGrid[x] && newGrid[x][y]) {
-      newGrid[x][y] = { status: 'full', itemId: item.id };
+      newGrid[y][x] = { status: 'full', itemId: item.id };
     }
   });
   return newGrid;
