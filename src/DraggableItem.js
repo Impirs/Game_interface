@@ -1,60 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useDrag } from 'react-dnd';
 
-const ItemType = 'ITEM';
-
-const DraggableItem = ({ item, items, setItems }) => {
-  const [tag, setTag] = useState('static');
-
-  const [{ isDragging }, dragRef] = useDrag({
-    type: ItemType,
-    item: (monitor) => {
-      setTag('dynamic'); 
-
-      const clientOffset = monitor.getInitialClientOffset();
-      const sourceOffset = monitor.getInitialSourceClientOffset();
-
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (clientOffset && sourceOffset) {
-        offsetX = clientOffset.x - sourceOffset.x;
-        offsetY = clientOffset.y - sourceOffset.y;
-      }
-
-      return { ...item, offsetX, offsetY, tag };
-    },
+const Item = ({ id, size, position }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'ITEM',
+    item: { id },
     collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
+      isDragging: monitor.isDragging(),
     }),
-  });
+  }));
 
-  useEffect(() => {
-    if (!isDragging) {
-      setTag('static');
-    }
-  }, [isDragging]);
+  const style = {
+    left: position[0].x * 50 + 'px',
+    top: position[0].y * 50 + 'px',
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   return (
     <div
-      ref={dragRef}
-      style={{
-        position: 'absolute',
-        borderRadius: 10,
-        left: item.x * 100,
-        top: item.y * 100,
-        width: item.width * 100,
-        height: item.height * 100,
-        backgroundColor: 'orange',
-        opacity: isDragging ? 0.1 : 1,
-        display: 'flex',
-        placeContent: 'center',
-        alignItems: 'center',
-      }}
+      ref={drag}
+      className={`item size-${size}`}
+      style={style}
     >
-      {item.id} ({tag})
+      {id}
     </div>
   );
 };
 
-export default DraggableItem;
+export default Item;

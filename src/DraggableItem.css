@@ -1,0 +1,22 @@
+.item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.item.small {
+  background-color: blue;
+}
+
+.item.large {
+  background-color: orange;
+}
+
+.item.dragging {
+  opacity: 0.5;
+}
