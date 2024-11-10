@@ -5,14 +5,7 @@ import './Grid.css';
 
 const Grid = ({ width, height, items }) => {
   const [grid, setGrid] = useState(generateGrid(width, height, items));
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-  const startDrag = (item, startX, startY) => {
-    const offsetX = startX - item.position[0].x;
-    const offsetY = startY - item.position[0].y;
-    setDragOffset({ x: offsetX, y: offsetY });
-  };
-
+  
   const moveItem = useCallback(
     (id, toX, toY) => {
       const item = items.find(i => i.id === id);
@@ -20,14 +13,14 @@ const Grid = ({ width, height, items }) => {
 
       const newGrid = clearItemCells(grid, item);
 
-      const newPosition = calculateNewPosition(item, toX - dragOffset.x, toY - dragOffset.y);
+      const newPosition = calculateNewPosition(item, toX, toY);
       if (isPositionValid(newGrid, newPosition, width, height)) {
         setGrid(updateGridWithItem(newGrid, item, newPosition));
       } else {
         setGrid(updateGridWithItem(newGrid, item, item.position));
       }
     },
-    [grid, items, width, height, dragOffset]
+    [grid, items, width, height]
   );
 
   return (
@@ -42,7 +35,6 @@ const Grid = ({ width, height, items }) => {
                 y={y}
                 grid={grid}
                 moveItem={moveItem}
-                startDrag={(item) => startDrag(item, x, y)}
               />
             ))}
           </div>
